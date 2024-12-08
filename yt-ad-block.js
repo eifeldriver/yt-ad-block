@@ -1,55 +1,56 @@
 // ==UserScript==
-// @name YouTube AD Blocker
-// @name:zh-CN Anzeigen auf YouTube entfernen
-// @name:zh-TW Werbung von YouTube entfernen
-// @name:zh-HK Werbung auf YouTube entfernen
-// @name:zh-MO YouTube entfernt Werbung
-// @namespace https://github.com/iamfugui/YouTubeADB
-// @version 6.01
-// @description Dies ist ein Skript zum Entfernen von YouTube-Anzeigen. Es ist leicht und effizient. Es kann Schnittstellenanzeigen und Videoanzeigen, einschließlich 6S-Anzeigen, problemlos entfernen. Dies ist ein Skript zum Entfernen von Anzeigen auf YouTube. Es ist leichtgewichtig und effizient und kann Schnittstellen- und Videoanzeigen, einschließlich 6s-Anzeigen, problemlos entfernen.
-// @description:zh-CN Dies ist ein Skript zum Entfernen von YouTube-Anzeigen. Es ist leichtgewichtig und effizient. Es kann Schnittstellenanzeigen und Videoanzeigen, einschließlich 6S-Anzeigen, problemlos entfernen.
-// @description:zh-TW Dies ist ein Skript zum Entfernen von YouTube-Anzeigen. Es ist leichtgewichtig und effizient. Es kann Schnittstellenanzeigen und Videoanzeigen, einschließlich 6S-Anzeigen, problemlos entfernen.
-// @description:zh-HK Dies ist ein Skript zum Entfernen von YouTube-Anzeigen. Es ist leichtgewichtig und effizient. Es kann Schnittstellenanzeigen und Videoanzeigen, einschließlich 6S-Anzeigen, reibungslos entfernen.
-// @description:zh-MO Dies ist ein Skript zum Entfernen von YouTube-Anzeigen. Es ist leichtgewichtig und effizient. Es kann Schnittstellenanzeigen und Videoanzeigen, einschließlich 6S-Anzeigen, reibungslos entfernen.
-// @author iamfugui
-// @match        https://*.youtube.com/*
+// @name         youtube-adb
+// @name:zh-CN   YouTube去广告
+// @name:zh-TW   YouTube去廣告
+// @name:zh-HK   YouTube去廣告
+// @name:zh-MO   YouTube去廣告
+// @namespace    https://github.com/iamfugui/youtube-adb
+// @version      6.21
+// @description         A script to remove YouTube ads, including static ads and video ads, without interfering with the network and ensuring safety.
+// @description:zh-CN   脚本用于移除YouTube广告，包括静态广告和视频广告。不会干扰网络，安全。
+// @description:zh-TW   腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。
+// @description:zh-HK   腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。
+// @description:zh-MO   腳本用於移除 YouTube 廣告，包括靜態廣告和視頻廣告。不會干擾網路，安全。
+// @match        *://*.youtube.com/*
 // @exclude      *://accounts.youtube.com/*
 // @exclude      *://www.youtube.com/live_chat_replay*
 // @exclude      *://www.youtube.com/persist_identity*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=YouTube.com
 // @grant        none
 // @license MIT
-// @downloadURL
-// @updateURL
+// @downloadURL https://update.greasyfork.org/scripts/459541/YouTube%E5%8E%BB%E5%B9%BF%E5%91%8A.user.js
+// @updateURL https://update.greasyfork.org/scripts/459541/YouTube%E5%8E%BB%E5%B9%BF%E5%91%8A.meta.js
 // ==/UserScript==
+
 (function() {
     `use strict`;
 
-    //Interface-Anzeigenselektor
-    const cssSeletorArr = [
-         `#masthead-ad`,//Die Bannerwerbung oben auf der Homepage.
-         `ytd-rich-item-renderer.style-scope.ytd-rich-grid-row #content:has(.ytd-display-ad-renderer)`,//Video-Layout-Werbung für die Startseite.
-         `.video-ads.ytp-ad-module`,//Anzeigen am unteren Rand des Players.
-         `tp-yt-paper-dialog:has(yt-mealbar-promo-renderer)`, //Werbung zur Mitgliedschaftsförderung auf der Seite abspielen.
-         `ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"]`,//Empfohlene Anzeigen in der oberen rechten Ecke der Wiedergabeseite.
-         `#related #player-ads`,//Bewerben Sie Anzeigen auf der rechten Seite des Kommentarbereichs auf der Play-Seite.
-         `#related ytd-ad-slot-renderer`, //Video-Layout-Werbung auf der rechten Seite des Kommentarbereichs der Wiedergabeseite.
-         `ytd-ad-slot-renderer`, // Seitenanzeige durchsuchen.
-         `yt-mealbar-promo-renderer`, //Werbung für Empfehlungen von Seitenmitgliedern abspielen.
-         `ad-slot-renderer`,//M spielt von Drittanbietern empfohlene Anzeigen auf der Seite ab
-         `ytm-companion-ad-renderer`,//M überspringbarer Videoanzeigenlink
+    let video;
+    //界面广告选择器
+    const cssSelectorArr = [
+        `#masthead-ad`,//首页顶部横幅广告.
+        `ytd-rich-item-renderer.style-scope.ytd-rich-grid-row #content:has(.ytd-display-ad-renderer)`,//首页视频排版广告.
+        `.video-ads.ytp-ad-module`,//播放器底部广告.
+        `tp-yt-paper-dialog:has(yt-mealbar-promo-renderer)`,//播放页会员促销广告.
+        `ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"]`,//播放页右上方推荐广告.
+        `#related #player-ads`,//播放页评论区右侧推广广告.
+        `#related ytd-ad-slot-renderer`,//播放页评论区右侧视频排版广告.
+        `ytd-ad-slot-renderer`,//搜索页广告.
+        `yt-mealbar-promo-renderer`,//播放页会员推荐广告.
+        `ytd-popup-container:has(a[href="/premium"])`,//会员拦截广告
+        `ad-slot-renderer`,//M播放页第三方推荐广告
+        `ytm-companion-ad-renderer`,//M可跳过的视频广告链接处
     ];
-
-    window.dev=true;/// show log messages
+    window.dev=false;//开发使用
 
     /**
-     * Formatieren Sie die Standardzeit
-     * @param {Datum} Zeit Standardzeit
-     * @param {String} Formatformat
+     * 将标准时间格式化
+     * @param {Date} time 标准时间
+     * @param {String} format 格式
      * @return {String}
      */
     function moment(time) {
-        // Jahr, Monat, Stunde, Minute und Sekunde abrufen
+        // 获取年⽉⽇时分秒
         let y = time.getFullYear()
         let m = (time.getMonth() + 1).toString().padStart(2, `0`)
         let d = time.getDate().toString().padStart(2, `0`)
@@ -60,9 +61,9 @@
     }
 
     /**
-     * Ausgabeinformationen
-     * @param {String} Nachrichteninformationen
-     * @return {undefiniert}
+     * 输出信息
+     * @param {String} msg 信息
+     * @return {undefined}
      */
     function log(msg) {
         if(!window.dev){
@@ -73,28 +74,28 @@
     }
 
     /**
-     * Setzen des Run-Flag
-     * @param {String} Name
-     * @return {undefiniert}
+     * 设置运行标志
+     * @param {String} name
+     * @return {undefined}
      */
     function setRunFlag(name){
         let style = document.createElement(`style`);
         style.id = name;
-        (document.querySelector(`head`) || document.querySelector(`body`)).appendChild(style);//Knoten an HTML anhängen.
+        (document.head || document.body).appendChild(style);//将节点附加到HTML.
     }
 
     /**
-     * Holt das Run-Flag
-     * @param {String} Name
-     * @return {undefiniert|Element}
+     * 获取运行标志
+     * @param {String} name
+     * @return {undefined|Element}
      */
     function getRunFlag(name){
         return document.getElementById(name);
     }
 
     /**
-     * Überprüfen Sie, ob das Run-Flag
-     * @param {String} Name
+     * 检查是否设置了运行标志
+     * @param {String} name
      * @return {Boolean}
      */
     function checkRunFlag(name){
@@ -107,42 +108,42 @@
     }
 
     /**
-     * Generieren Sie einen CSS-Elementstil, der Werbung entfernt, und hängen Sie ihn an den HTML-Knoten an
-     * @param {String} formatiert Stiltext
-     * @return {undefiniert}
+     * 生成去除广告的css元素style并附加到HTML节点上
+     * @param {String} styles 样式文本
+     * @return {undefined}
      */
     function generateRemoveADHTMLElement(id) {
-        //Wenn es gesetzt wurde, beenden.
+        //如果已经设置过,退出.
         if (checkRunFlag(id)) {
-            log(`Knoten zum Blockieren von Seitenwerbung wurde generiert`);
+            log(`屏蔽页面广告节点已生成`);
             return false
         }
 
-        // Legen Sie den Stil der Entfernungsanzeige fest.
-        let style = document.createElement(`style`);//Stilelement erstellen.
-        (document.querySelector(`head`) || document.querySelector(`body`)).appendChild(style);//Knoten an HTML anhängen.
-        style.appendChild(document.createTextNode(generateRemoveADCssText(cssSeletorArr)));//Stilknoten an Elementknoten anhängen.
-        log(`Anzeigenknoten zum Blockieren der Seite erfolgreich generiert`);
+        //设置移除广告样式.
+        let style = document.createElement(`style`);//创建style元素.
+        (document.head || document.body).appendChild(style);//将节点附加到HTML.
+        style.appendChild(document.createTextNode(generateRemoveADCssText(cssSelectorArr)));//附加样式节点到元素节点.
+        log(`生成屏蔽页面广告节点成功`);
     }
 
     /**
-     * Generieren Sie CSS-Text, um Anzeigen zu entfernen
-     * @param {Array} cssSeletorArr Array der festzulegenden CSS-Selektoren
+     * 生成去除广告的css文本
+     * @param {Array} cssSelectorArr 待设置css选择器数组
      * @return {String}
      */
-    function generateRemoveADCssText(cssSeletorArr){
-        cssSeletorArr.forEach((seletor,index)=>{
-            cssSeletorArr[index]=`${seletor}{display:none!important}`;//Traversieren und Stile festlegen.
-        });
-        return cssSeletorArr.join(` `);// als String zurückgeben
+    function generateRemoveADCssText(cssSelectorArr){
+        cssSelectorArr.forEach((selector,index)=>{
+            cssSelectorArr[index]=`${selector}{display:none!important}`;//遍历并设置样式.
+    });
+        return cssSelectorArr.join(` `);//拼接成字符串.
     }
 
     /**
-     * Touch-Ereignis
-     * @return {undefiniert}
+     * 触摸事件
+     * @return {undefined}
      */
     function nativeTouch(){
-        // Touch-Objekt erstellen
+        // 创建 Touch 对象
         let touch = new Touch({
             identifier: Date.now(),
             target: this,
@@ -154,7 +155,7 @@
             force: 1
         });
 
-        // TouchEvent-Objekt erstellen
+        // 创建 TouchEvent 对象
         let touchStartEvent = new TouchEvent(`touchstart`, {
             bubbles: true,
             cancelable: true,
@@ -164,10 +165,10 @@
             changedTouches: [touch]
         });
 
-        // Touchstart-Ereignis an Zielelement senden
+        // 分派 touchstart 事件到目标元素
         this.dispatchEvent(touchStartEvent);
 
-        // TouchEvent-Objekt erstellen
+        // 创建 TouchEvent 对象
         let touchEndEvent = new TouchEvent(`touchend`, {
             bubbles: true,
             cancelable: true,
@@ -177,96 +178,165 @@
             changedTouches: [touch]
         });
 
-        // Touchend-Ereignis an Zielelement senden
+        // 分派 touchend 事件到目标元素
         this.dispatchEvent(touchEndEvent);
     }
 
+
     /**
-     * Anzeigen überspringen
-     * @return {undefiniert}
+     * 获取dom
+     * @return {undefined}
+     */
+    function getVideoDom(){
+        video = document.querySelector(`.ad-showing video`) || document.querySelector(`video`);
+    }
+
+
+    /**
+     * 自动播放
+     * @return {undefined}
+     */
+    function playAfterAd(){
+        if(video.paused && video.currentTime<1){
+            video.play();
+            log(`自动播放视频`);
+        }
+    }
+
+
+    /**
+     * 移除YT拦截广告拦截弹窗并且关闭关闭遮罩层
+     * @return {undefined}
+     */
+    function closeOverlay(){
+        //移除YT拦截广告拦截弹窗
+        const premiumContainers = [...document.querySelectorAll(`ytd-popup-container`)];
+        const matchingContainers = premiumContainers.filter(container => container.querySelector(`a[href="/premium"]`));
+
+        if(matchingContainers.length>0){
+            matchingContainers.forEach(container => container.remove());
+            log(`移除YT拦截器`);
+        }
+
+        // 获取所有具有指定标签的元素
+        const backdrops = document.querySelectorAll(`tp-yt-iron-overlay-backdrop`);
+        // 查找具有特定样式的元素
+        const targetBackdrop = Array.from(backdrops).find(
+            (backdrop) => backdrop.style.zIndex === `2201`
+    );
+        // 如果找到该元素，清空其类并移除 open 属性
+        if (targetBackdrop) {
+            targetBackdrop.className = ``; // 清空所有类
+            targetBackdrop.removeAttribute(`opened`); // 移除 open 属性
+            log(`关闭遮罩层`);
+        }
+    }
+
+
+    /**
+     * 跳过广告
+     * @return {undefined}
      */
     function skipAd(mutationsList, observer) {
-        let video = document.querySelector(`.ad-showing video`) || document.querySelector(`video`);//Den Videoknoten abrufen
-        let skipButton = document.querySelector(`.ytp-ad-skip-button`) || document.querySelector(`.ytp-ad-skip-button-modern`);
-        let shortAdMsg = document.querySelector(`.video-ads.ytp-ad-module .ytp-ad-player-overlay`);
+        const skipButton = document.querySelector(`.ytp-ad-skip-button`) || document.querySelector(`.ytp-skip-ad-button`) || document.querySelector(`.ytp-ad-skip-button-modern`);
+        const shortAdMsg = document.querySelector(`.video-ads.ytp-ad-module .ytp-ad-player-overlay`) || document.querySelector(`.ytp-ad-button-icon`);
+
+        if((skipButton || shortAdMsg) && window.location.href.indexOf(`https://m.youtube.com/`) === -1){ //移动端静音有bug
+            video.muted = true;
+        }
 
         if(skipButton){
-            // Mobile Stummschaltung hat einen Fehler
-            if( window.location.href.indexOf("https://m.youtube.com/") === -1){
-                video.muted = true;
-            }
-            if(video.currentTime>0.5){
-                video.currentTime = video.duration;// Telefon
-                log(`Spezielle Konto-Button-Werbung überspringen~~~~~~~~~~~~~`);
+            const delayTime = 0.5;
+            setTimeout(skipAd,delayTime*1000);//如果click和call没有跳过更改，直接更改广告时间
+            if(video.currentTime>delayTime){
+                video.currentTime = video.duration;//强制
+                log(`特殊账号跳过按钮广告`);
                 return;
             }
             skipButton.click();//PC
-            nativeTouch.call(skipButton);// Phone
-            log(`### skip ad ###`);
+            nativeTouch.call(skipButton);//Phone
+            log(`按钮跳过广告`);
         }else if(shortAdMsg){
-            video.currentTime = video.duration;
-            log(`### force ad to stop ###`);
-        }else{
-            // log(`######Anzeige existiert nicht######`);
+            video.currentTime = video.duration;//强制
+            log(`强制结束了该广告`);
         }
 
     }
 
     /**
-     * Entfernen Sie Werbung während der Wiedergabe
-     * @return {undefiniert}
+     * 去除播放中的广告
+     * @return {undefined}
      */
     function removePlayerAD(id){
-        // Wenn es bereits läuft, beenden Sie es.
+        //如果已经在运行,退出.
         if (checkRunFlag(id)) {
-            log(`Die Funktion zum Entfernen von Werbung während der Wiedergabe läuft bereits`);
+            log(`去除播放中的广告功能已在运行`);
             return false
         }
-        let observer;// Zuhörer
-        let timerID;// Timer
 
-        // Start listening
-        function startObserve(){
-            // Werbeknotenüberwachung
-            const targetNode = document.querySelector(`.video-ads.ytp-ad-module`);
-            if(!targetNode){
-                log(`Suche nach dem zu überwachenden Zielknoten`);
-                return false;
-            }
-            // Hören Sie sich die Werbung im Video an und verarbeiten Sie sie
-            const config = {childList: true, subtree: true };// Änderungen im Zielknoten selbst und in Knoten unter dem Teilbaum überwachen
-            observer = new MutationObserver(skipAd);// Erstellen Sie eine Observer-Instanz und legen Sie die Rückruffunktion für die Verarbeitung von Ankündigungen fest
-            observer.observe(targetNode, config);// Beobachten Sie Werbeknoten mit der obigen Konfiguration
-            timerID=setInterval(skipAd, 500);// Diejenigen, die durchs Netz gerutscht sind
-        }
-
-        // Abfrageaufgabe
-        let startObserveID = setInterval(()=>{
-            if(observer && timerID){
-                clearInterval(startObserveID);
-            }else{
-                startObserve();
-            }
-        },16);
-
-        log(`Die Funktion zum Entfernen von Werbung während der Wiedergabe wurde erfolgreich ausgeführt`);
+        //监听视频中的广告并处理
+        const targetNode = document.body;//直接监听body变动
+        const config = {childList: true, subtree: true };// 监听目标节点本身与子树下节点的变动
+        const observer = new MutationObserver(()=>{getVideoDom();closeOverlay();skipAd();playAfterAd();});//处理视频广告相关
+        observer.observe(targetNode, config);// 以上述配置开始观察广告节点
+        log(`运行去除播放中的广告功能成功`);
     }
 
     /**
-    * Hauptfunktion
-    */
+     * main函数
+     */
     function main(){
-        generateRemoveADHTMLElement(`removeADHTMLElement`);// Werbung in der Schnittstelle entfernen.
-        removePlayerAD(`removePlayerAD`);// Entferne die abgespielte Werbung.
+        generateRemoveADHTMLElement(`removeADHTMLElement`);//移除界面中的广告.
+        removePlayerAD(`removePlayerAD`);//移除播放中的广告.
     }
 
-    log('Youtube Ad blocker loading ....');
     if (document.readyState === `loading`) {
-        log(`waiting to start Youtube Ad blocker ...`);
-        document.addEventListener(`DOMContentLoaded`, main);// Der Ladevorgang ist zu diesem Zeitpunkt noch nicht abgeschlossen
+        document.addEventListener(`DOMContentLoaded`, main);// 此时加载尚未完成
+        log(`YouTube去广告脚本即将调用:`);
     } else {
-        log(`Youtube Ad blocker started`);
-        main();// Zu diesem Zeitpunkt wurde „DOMContentLoaded“ ausgelöst
+        main();// 此时`DOMContentLoaded` 已经被触发
+        log(`YouTube去广告脚本快速调用:`);
     }
 
+    let resumeVideo = () => {
+        const videoelem = document.body.querySelector('video.html5-main-video')
+        if (videoelem && videoelem.paused) {
+            console.log('resume video')
+            videoelem.play()
+        }
+    }
+
+    let removePop = node => {
+        const elpopup = node.querySelector('.ytd-popup-container > .ytd-popup-container > .ytd-enforcement-message-view-model')
+
+        if (elpopup) {
+            elpopup.parentNode.remove()
+            console.log('remove popup', elpopup)
+            const bdelems = document
+                .getElementsByTagName('tp-yt-iron-overlay-backdrop')
+            for (var x = (bdelems || []).length; x--;)
+                bdelems[x].remove()
+            resumeVideo()
+        }
+
+        if (node.tagName.toLowerCase() === 'tp-yt-iron-overlay-backdrop') {
+            node.remove()
+            resumeVideo()
+            console.log('remove backdrop', node)
+        }
+    }
+
+    let obs = new MutationObserver(mutations => mutations.forEach(mutation => {
+        if (mutation.type === 'childList') {
+        Array.from(mutation.addedNodes)
+            .filter(node => node.nodeType === 1)
+    .map(node => removePop(node))
+    }
+}))
+
+    // have the observer observe foo for changes in children
+    obs.observe(document.body, {
+        childList: true,
+        subtree: true
+    })
 })();
